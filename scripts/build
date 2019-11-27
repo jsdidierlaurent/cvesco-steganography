@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+# Do not use this script manually, Use makefile
+set -eu -o pipefail
+
+# Check param or use default
+if [[ $# -eq 1 ]]; then
+  if [[ $1 == "windows" ]]; then
+    GOOS=windows
+    GOARCH=amd64
+  elif [[ $1 == "linux" ]]; then
+    GOOS=linux
+    GOARCH=amd64
+  elif [[ $1 == "macos" ]]; then
+    GOOS=darwin
+    GOARCH=amd64
+  fi
+else
+  GOOS="${GOOS:-$(go env GOHOSTOS)}"
+  GOARCH="${GOARCH:-$(go env GOHOSTARCH)}"
+fi
+
+# Define Target name
+if [[ $GOOS == "windows" ]]; then
+  TARGET="build/steganography-$GOOS-$GOARCH.exe"
+elif [[ $GOOS == "darwin" ]]; then
+  TARGET="build/steganography-macos"
+else
+  TARGET="build/steganography-$GOOS-$GOARCH"
+fi
+
+export CGO_ENABLED=0
+export GOGC=off
+
+echo "Building statically linked $TARGET"
+go build -o "${TARGET}" main.go
